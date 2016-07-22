@@ -57,7 +57,7 @@ public enum Type :Int{
  Set up shorthands for OS-specific code
  */
 #if os(Linux)
-    public typealias AnyType = Any
+    public typealias AnyType = AnyObject
     var utf8encoding = NSUTF8StringEncoding
 #else
     public typealias AnyType = AnyObject
@@ -77,7 +77,7 @@ public struct JSON {
     */
     public init(data:NSData, options opt: NSJSONReadingOptions = .allowFragments) {
         do {
-            let object: Any = try NSJSONSerialization.jsonObject(with: data, options: opt)
+            let object: AnyType = try NSJSONSerialization.jsonObject(with: data, options: opt)
             self.init(object)
         }
         catch {
@@ -88,7 +88,7 @@ public struct JSON {
 #else
     public init(data:NSData, options opt: JSONSerialization.ReadingOptions = .allowFragments, error: NSErrorPointer = nil) {
         do {
-            let object: AnyObject = try JSONSerialization.jsonObject(with: data as Data, options: opt)
+            let object: AnyType = try JSONSerialization.jsonObject(with: data as Data, options: opt)
             self.init(object)
         } catch let aError as NSError {
             if error != nil {
@@ -834,11 +834,11 @@ extension JSON: Swift.RawRepresentable {
 
 #if os(Linux)
     public func rawData(options opt: NSJSONWritingOptions = NSJSONWritingOptions(rawValue: 0)) throws -> NSData {
-        guard LclJSONSerialization.isValidJSONObject(self.object) else {
+        guard NSJSONSerialization.isValidJSONObject(self.object) else {
             throw NSError(domain: ErrorDomain, code: ErrorInvalidJSON, userInfo: [NSLocalizedDescriptionKey: "JSON is invalid"])
         }
     
-        return try LclJSONSerialization.dataWithJSONObject(self.object, options: opt)
+        return try NSJSONSerialization.data(withJSONObject: self.object as! AnyObject, options: opt)
     }
 #else
     public func rawData(options opt: JSONSerialization.WritingOptions = JSONSerialization.WritingOptions(rawValue: 0)) throws -> NSData {
